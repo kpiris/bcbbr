@@ -1,6 +1,6 @@
 # Bitwarden CLI Bash Backup & restore
 
-A couple of simple bash scripts to backup and restore a Bitwarden Vault,
+A couple of simple bash scripts to backup and restore a Bitwarden vault,
 including attachments.
 
 ## Prerequisites:
@@ -39,8 +39,8 @@ empty before importing (to prevent duplicating items).
 Also tries to import an organization export to the only organization vault the
 account should have access to.
 
-After importing the vault(s) it tries to restore the attachments backup on that
-exports directory.
+After importing the vault(s) it tries to restore the attachments backups
+present on that exports directory.
 
 
 ## Restore attachments script:
