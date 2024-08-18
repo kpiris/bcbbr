@@ -51,9 +51,10 @@ It should be called with the files containing the attachments backups as
 arguments. It imports those attachments to the items in the currently unlocked
 vault.
 
-  * It uses the items json export to find which item in the new vault every
-    attachment belongs to.
+  * It uses the items.json export to find which item in the new vault every
+    attachment belongs to (note that the item_id on the export can be different
+    from the item_id in the destination vault).
 
-  * If the destionation item alredy has attachments, then it does not restore
+  * If the destination item alredy has attachments, then it does not restore
     them (to prevent duplicates).
 
