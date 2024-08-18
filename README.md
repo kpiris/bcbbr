@@ -5,12 +5,12 @@ including attachments.
 
 ## Prerequisites:
 
-  * bitwarden cli (bw) in path
+  * Bitwarden cli (bw) in path
 
   * jq
 
-  * vault to backup (or to restore to) unclocked and BW_SESSION environment
-    variable correctly set.
+  * Vault to backup (or to restore to) unlocked (and BW_SESSION environment
+    variable correctly set).
 
   * gpg correctly configured with a keypair already created, and environment
     variable MYPGPKEY set to it's KEY-ID.
