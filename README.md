@@ -7,6 +7,8 @@ including attachments.
 
   * bitwarden cli (bw) in path
 
+  * jq
+
   * vault to backup (or to restore to) unclocked and BW_SESSION environment
     variable correctly set.
 
