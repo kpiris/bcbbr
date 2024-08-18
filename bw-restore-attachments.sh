@@ -6,7 +6,7 @@ echo2 () {
     echo "$*" >&2
 }
 
-casca () {
+abort () {
     echo2 "$*"
     exit 2
 }
@@ -23,14 +23,14 @@ IFS="$(echo -en "\n\b")"
 export BWSTATUS="$(bw status)"
 export BWSTATUS_LOGIN="$(echo "${BWSTATUS}" | jq -r '.status')"
 if [ "${BWSTATUS_LOGIN}" != "unlocked" ] ; then
-    casca "ERROR: a vault must be unlocked (\`${BWSTATUS}')."
+    abort "ERROR: a vault must be unlocked (\`${BWSTATUS}')."
 fi
 
 umask 0077
 bw sync
 DESTINATION_VAULT_ITEMS="$(bw list items)"
 
-if [ "${DESTINATION_VAULT_ITEMS}" == "[]" ] ; then casca "ERROR: destination vault is empty" ; fi
+if [ "${DESTINATION_VAULT_ITEMS}" == "[]" ] ; then abort "ERROR: destination vault is empty" ; fi
 
 while [ "${1}" != "" ] ; do
     FLE="$(realpath ${1})"

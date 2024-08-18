@@ -6,7 +6,7 @@ echo2 () {
     echo "$*" >&2
 }
 
-casca () {
+abort () {
     echo2 "$*"
     exit 2
 }
@@ -28,7 +28,7 @@ fi
 export BWSTATUS="$(bw status)"
 export BWSTATUS_LOGIN="$(echo "${BWSTATUS}" | jq -r '.status')"
 if [ "${BWSTATUS_LOGIN}" != "unlocked" ] ; then
-    casca "ERROR: a vault must be unlocked (\`${BWSTATUS}')."
+    abort "ERROR: a vault must be unlocked (\`${BWSTATUS}')."
 fi
 
 umask 0077
