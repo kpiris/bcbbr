@@ -1,4 +1,4 @@
-# Bitwarden CLI Bash Backup & restore
+# Bitwarden CLI Bash backup & restore
 
 A couple of simple bash scripts to backup and restore a Bitwarden vault,
 including attachments.
