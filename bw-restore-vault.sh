@@ -71,7 +71,7 @@ if [ "${LASTEXPORT_VAULT_ORG}" != "" ] ; then
     fi
     ORGANIZATION_ID="$(bw list organizations | jq -r '.[] | select (.status==2 and (.type==0 or .type==1)) | .id')"
     NUM_ORGS=0
-    for TMP_ID in ORGANIZATION_ID ; do
+    for TMP_ID in ${ORGANIZATION_ID} ; do
         let NUM_ORGS=${NUM_ORGS}+1
     done
     if [ ${NUM_ORGS} -ne 1 ] ; then
