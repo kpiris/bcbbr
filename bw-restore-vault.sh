@@ -69,7 +69,7 @@ if [ "${LASTEXPORT_VAULT_ORG}" != "" ] ; then
         echoprompt "gpg --verify ${LASTEXPORT_VAULT_ORG}.sign"
         gpg --verify ${LASTEXPORT_VAULT_ORG}.sign
     fi
-    ORGANIZATION_ID="$(bw list organizations | jq -r '.[] | select (.type==0 or .type==1) | .id')"
+    ORGANIZATION_ID="$(bw list organizations | jq -r '.[] | select (.status==2 and (.type==0 or .type==1)) | .id')"
     NUM_ORGS=0
     for TMP_ID in ORGANIZATION_ID ; do
         let NUM_ORGS=${NUM_ORGS}+1

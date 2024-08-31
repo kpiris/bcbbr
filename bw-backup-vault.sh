@@ -40,7 +40,7 @@ umask 0077
 bw sync
 
 USER_ID="$(echo "${BWSTATUS}" | jq -r '.userId')"
-ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.type==0 or .type==1) | .id')"
+ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.status==2 and (.type==0 or .type==1)) | .id')"
 
 DATE_SUFFIX="$(date '+%Y%m%d%H%M%S')"
 JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.json.gpg"
