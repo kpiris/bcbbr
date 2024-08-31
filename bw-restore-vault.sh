@@ -69,15 +69,15 @@ if [ "${LASTEXPORT_VAULT_ORG}" != "" ] ; then
         echoprompt "gpg --verify ${LASTEXPORT_VAULT_ORG}.sign"
         gpg --verify ${LASTEXPORT_VAULT_ORG}.sign
     fi
-    ORGANIZATION_ID="$(bw list organizations | jq -r '.[] | .id')"
+    ORGANIZATION_ID="$(bw list organizations | jq -r '.[] | select (.type==0 or .type==1) | .id')"
     NUM_ORGS=0
     for TMP_ID in ORGANIZATION_ID ; do
         let NUM_ORGS=${NUM_ORGS}+1
     done
     if [ ${NUM_ORGS} -ne 1 ] ; then
-        echo2 "WARNING: Destination vault must belong to one and only one organization."
+        echo2 "WARNING: Destination account must be owner or admin of one and only one organization."
     else
-        echo2 "INFO: Destination vault belongs to one and only one organization. OK."
+        echo2 "INFO: Destination account is owner or admin of one and only one organization. OK."
         if [ "$(bw list items --organizationid ${ORGANIZATION_ID})" != "[]" ] ; then
             echo2 "WARNING: Destination organization vault is not empty."
         else
