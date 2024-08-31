@@ -69,10 +69,10 @@ for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
     JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
     echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg -er ${MYPGPKEY} -o '${JSON_ORG_OUTPUT_FILE}'"
     bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg -er ${MYPGPKEY} -o "${JSON_ORG_OUTPUT_FILE}"
-if [ ${NO_SIGN} -ne 1 ] ; then
-    echoprompt "gpg -absu ${MYPGPKEY} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
-    gpg -absu ${MYPGPKEY} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
-fi
+    if [ ${NO_SIGN} -ne 1 ] ; then
+        echoprompt "gpg -absu ${MYPGPKEY} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
+        gpg -absu ${MYPGPKEY} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
+    fi
     CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
     echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o '${CSV_ORG_OUTPUT_FILE}'"
     bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o "${CSV_ORG_OUTPUT_FILE}"
