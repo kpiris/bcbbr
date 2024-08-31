@@ -26,7 +26,7 @@ contains a json export of the items those attachments belong to, used when
 restoring them).
 
 It exports the personal vault and also tries to export all the organization
-vaults the account has access to.
+vaults of which the account is an owner or an admin.
 
 All of the backup files are encrypted with GPG to the key-id set in MYPGPKEY
 environment variable. Those encrypted files are also signed with that same key.
@@ -39,7 +39,7 @@ currently unlocked vault. It checks that this destination vault is completely
 empty before importing (to prevent duplicating items).
 
 Also tries to import an organization export to the only organization vault the
-account should have access to.
+account should be owner or admin of.
 
 After importing the vault(s) it tries to restore the attachments backups
 present on that exports directory.
