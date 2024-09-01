@@ -35,10 +35,10 @@ IMPORTANT (about organization vault backups):
 
 As mentioned, to be able to backup an organization vault, the account must be
 an owner or an admin of that organization. All organization vault items will be
-exported.
+exported (even if they are in a collection the account has no access to).
 
 HOWEVER, the attachments in items belonging to any collection the account has
-no access to, WILL NOT BE EXPORTED. Regardless of the organization setting
+no access to WILL NOT BE EXPORTED. Regardless of the organization setting
 “Owners and admins can manage all collections and items”.
 
 
