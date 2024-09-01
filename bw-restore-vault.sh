@@ -86,7 +86,7 @@ if [ "${LASTEXPORT_VAULT_ORG}" != "" ] ; then
                 echo2 "WARNING: Destination organization vault trash is not empty."
             else
                 echo2 "INFO: organization vault trash is empty. OK."
-                if [ "$(bw list collections)" != "[]" ] ; then
+                if [ "$(bw list collections --organizationid ${ORGANIZATION_ID})" != "[]" ] ; then
                     echo2 "WARNING: Destination organization vault already has collections."
                 else
                     echo2 "INFO: organization vault has no collections. OK."
