@@ -62,7 +62,7 @@ organization attachments backup present in the exports directory.
 ## Restore attachments script:
 
 It should be called with the files containing the attachments backups as
-arguments. It imports those attachments to the items in the currently unlocked
+arguments. It uploads those attachments to the items in the currently unlocked
 vault.
 
   * It uses the items.json export to find which item in the new vault every
