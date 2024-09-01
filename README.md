@@ -22,7 +22,7 @@ It does an export both in json and csv formats (csv is for the case that one
 would like to import the backup into another password manager).
 
 It also retrieves attachments and stores them in a tar file (that tar file also
-contains a json export of the items those attachments belong to, used when
+contains a json list of the items those attachments belong to, used when
 restoring them).
 
 It exports the personal vault and also tries to export all the organization
@@ -33,13 +33,15 @@ environment variable. Those encrypted files are also signed with that same key.
 
 IMPORTANT (about organization vault backups):
 
-As mentioned, to be able to backup an organization vault, the account must be
-an owner or an admin of that organization. All organization vault items will be
-exported (even if they are in a collection the account has no access to).
+As mentioned, to be able to backup an organization vault, the account must be a
+confirmed owner or admin of that organization. All organization vault items
+will be exported (even if they are in a collection the account has no access
+to, regardless of the organization setting “Owners and admins can manage all
+collections and items”).
 
 HOWEVER, the attachments in items belonging to any collection the account has
-no access to WILL NOT BE EXPORTED. Regardless of the organization setting
-“Owners and admins can manage all collections and items”.
+no access to WILL NOT BE EXPORTED, again, regardless of that organization
+setting “Owners and admins can manage all collections and items”.
 
 
 ## Restore vault script:
@@ -51,8 +53,10 @@ empty before importing (to prevent duplicating items).
 Also tries to import an organization export to the only organization vault the
 account should be a confirmed owner or admin of.
 
-After importing the vault(s) it tries to restore the attachments backups
-present on that exports directory.
+After importing the vault(s) it tries to restore the latest attachments backup
+present on the exports directory. If the account is a confirmed owner or admin
+of one and only one organization, it also tries to restore the latest
+organization attachments backup present in the exports directory.
 
 
 ## Restore attachments script:
@@ -67,4 +71,9 @@ vault.
 
   * If the destination item alredy has attachments, then it does not restore
     them (to prevent duplicates).
+
+  * To restore attachments, the account does not need to be admin or owner of
+    any organization, BUT it needs to have access to the items those
+    attachments belong to.
+
 
