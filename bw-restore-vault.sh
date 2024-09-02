@@ -20,7 +20,7 @@ echoprompt () {
 
 export EXPORTSDIR="/dev/shm/"
 if [ "${1}" != "" ] ; then
-    EXPORTSDIR="${1}"
+    EXPORTSDIR="$(realpath ${1})"
 fi
 if [ "${EXPORTSDIR}" == "" ] || [ ! -d "${EXPORTSDIR}" ] ; then
     exit 1
