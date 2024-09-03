@@ -33,7 +33,7 @@ environment variable. Those encrypted files are also signed with that same key
 (there is an option not to sign them, in case the secret key is not available
 atm.).
 
-### IMPORTANT (about organization vault backups):
+### About **organization** vault backups:
 
 > [!IMPORTANT]
 As mentioned, to be able to backup an organization vault, the account must be a
@@ -49,8 +49,8 @@ collections and items_”).
 
 > [!TIP]
 To guarantee that the backup will be 100% complete, the account should have
-access to ALL the collections in the organization(s), besides beeing an owner
-or admin of that(those) organization(s).
+access to ALL the collections in the organization(s), besides being an owner or
+admin of that(those) organization(s).
 
 
 ## Restore vault script:
