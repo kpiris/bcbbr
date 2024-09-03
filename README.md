@@ -33,19 +33,19 @@ environment variable. Those encrypted files are also signed with that same key
 (there is an option not to sign them, in case the secret key is not available
 atm.).
 
-**IMPORTANT (about organization vault backups):**
+### IMPORTANT (about organization vault backups):
 
 > [!IMPORTANT]
 As mentioned, to be able to backup an organization vault, the account must be a
 confirmed owner or admin of that organization. All organization vault items
 will be exported (even if they are in a collection the account has no access
-to, regardless of the organization setting “Owners and admins can manage all
-collections and items”).
+to, regardless of the organization setting “__Owners and admins can manage all
+collections and items__”).
 
 > [!WARNING]
-HOWEVER, the attachments in organization items the account has NO access to
-WILL NOT BE EXPORTED, again, regardless of that organization setting “Owners
-and admins can manage all collections and items”.
+**HOWEVER**, the attachments in organization items the account has NO access to
+**WILL NOT BE EXPORTED**, again, regardless of that organization setting
+“__Owners and admins can manage all collections and items__”.
 
 > [!TIP]
 To guarantee that the backup will be 100% complete, the account should have
