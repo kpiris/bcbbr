@@ -19,7 +19,7 @@ including attachments.
 ## Backup script:
 
 It does an export both in json and csv formats (csv is for the case that one
-would like to import the backup into another password manager).
+would like to import it into another password manager).
 
 It also retrieves attachments and stores them in a tar file (that tar file also
 contains a json list of the items those attachments belong to, used when
@@ -43,8 +43,8 @@ to, regardless of the organization setting “_Owners and admins can manage all
 collections and items_”).
 
 > [!WARNING]
-**HOWEVER**, the attachments in organization items the account has NO access to,
-**WILL NOT BE EXPORTED**, again, regardless of that organization setting
+**HOWEVER**, the attachments in organization items the account has NO access
+to, **WILL NOT BE BACKED UP**; again, regardless of that organization setting
 “_Owners and admins can manage all collections and items_”.
 
 > [!TIP]
