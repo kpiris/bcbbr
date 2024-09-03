@@ -12,7 +12,7 @@ including attachments.
   * Vault to backup (or to restore to) unlocked (and BW_SESSION environment
     variable properly set).
 
-  * gpg correctly configured with a keypair already created, and environment
+  * gnupg correctly configured with a keypair already created, and environment
     variable MYPGPKEY set to it's KEY-ID.
 
 
@@ -33,18 +33,21 @@ environment variable. Those encrypted files are also signed with that same key
 (there is an option not to sign them, in case the secret key is not available
 atm.).
 
-IMPORTANT (about organization vault backups):
+**IMPORTANT (about organization vault backups):**
 
+> [!IMPORTANT]
 As mentioned, to be able to backup an organization vault, the account must be a
 confirmed owner or admin of that organization. All organization vault items
 will be exported (even if they are in a collection the account has no access
 to, regardless of the organization setting “Owners and admins can manage all
 collections and items”).
 
+> [!WARNING]
 HOWEVER, the attachments in organization items the account has NO access to
 WILL NOT BE EXPORTED, again, regardless of that organization setting “Owners
 and admins can manage all collections and items”.
 
+> [!TIP]
 To guarantee that the backup will be 100% complete, the account should have
 access to ALL the collections in the organization(s), besides beeing an owner
 or admin of that(those) organization(s).
@@ -64,6 +67,7 @@ present on the exports directory. If the account is a confirmed owner or admin
 of one and only one organization, it also tries to restore the latest
 organization attachments backup present in the exports directory.
 
+> [!TIP]
 If one should need to restore more than one organization vault, a manual import
 via, for example, the web vault can be done. After that, the restore vault
 attachments script can be run with all the attachments backup files as arguments.
