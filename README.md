@@ -43,7 +43,7 @@ to, regardless of the organization setting “_Owners and admins can manage all
 collections and items_”).
 
 > [!WARNING]
-**HOWEVER**, the attachments in organization items the account has NO access to
+**HOWEVER**, the attachments in organization items the account has NO access to,
 **WILL NOT BE EXPORTED**, again, regardless of that organization setting
 “_Owners and admins can manage all collections and items_”.
 
