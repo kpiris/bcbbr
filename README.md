@@ -39,13 +39,13 @@ atm.).
 As mentioned, to be able to backup an organization vault, the account must be a
 confirmed owner or admin of that organization. All organization vault items
 will be exported (even if they are in a collection the account has no access
-to, regardless of the organization setting “__Owners and admins can manage all
-collections and items__”).
+to, regardless of the organization setting “_Owners and admins can manage all
+collections and items_”).
 
 > [!WARNING]
 **HOWEVER**, the attachments in organization items the account has NO access to
 **WILL NOT BE EXPORTED**, again, regardless of that organization setting
-“__Owners and admins can manage all collections and items__”.
+“_Owners and admins can manage all collections and items_”.
 
 > [!TIP]
 To guarantee that the backup will be 100% complete, the account should have
@@ -70,7 +70,8 @@ organization attachments backup present in the exports directory.
 > [!TIP]
 If one should need to restore more than one organization vault, a manual import
 via, for example, the web vault can be done. After that, the restore vault
-attachments script can be run with all the attachments backup files as arguments.
+attachments script can be run with all the attachments backup files as
+arguments.
 
 
 ## Restore attachments script:
