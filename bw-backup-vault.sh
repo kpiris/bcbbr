@@ -19,12 +19,16 @@ echoprompt () {
 
 export WITH_ATTACHMENTS=1
 export NO_SIGN=0
+export ALSO_EXPORT_CSV_FORMAT=0
 while [ "${1:0:1}" == "-" ] ; do
     if [ "${1}" == "--without-attachments" ] ; then
         WITH_ATTACHMENTS=0
         shift
     elif [ "${1}" == "--nosign" ] ; then
         NO_SIGN=1
+        shift
+    elif [ "${1}" == "--csv" -o "${1}" == "--export-csv" ] ; then
+        ALSO_EXPORT_CSV_FORMAT=1
         shift
     else
         abort "ERROR: unknown option (\`${1}')."
@@ -58,12 +62,14 @@ if [ ${NO_SIGN} -ne 1 ] ; then
     echoprompt "gpg -absu ${MYPGPKEY} -o '${JSON_OUTPUT_FILE}.sign' '${JSON_OUTPUT_FILE}'"
     gpg -absu ${MYPGPKEY} -o "${JSON_OUTPUT_FILE}.sign" "${JSON_OUTPUT_FILE}" || /bin/true
 fi
-CSV_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.csv.gpg"
-echoprompt "bw export --format csv --raw | gpg -er ${MYPGPKEY} -o '${CSV_OUTPUT_FILE}'"
-bw export --format csv --raw | gpg -er ${MYPGPKEY} -o "${CSV_OUTPUT_FILE}"
-if [ ${NO_SIGN} -ne 1 ] ; then
-    echoprompt "gpg -absu ${MYPGPKEY} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
-    gpg -absu ${MYPGPKEY} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
+if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
+    CSV_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.csv.gpg"
+    echoprompt "bw export --format csv --raw | gpg -er ${MYPGPKEY} -o '${CSV_OUTPUT_FILE}'"
+    bw export --format csv --raw | gpg -er ${MYPGPKEY} -o "${CSV_OUTPUT_FILE}"
+    if [ ${NO_SIGN} -ne 1 ] ; then
+        echoprompt "gpg -absu ${MYPGPKEY} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
+        gpg -absu ${MYPGPKEY} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
+    fi
 fi
 for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
     JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
@@ -73,12 +79,14 @@ for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
         echoprompt "gpg -absu ${MYPGPKEY} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
         gpg -absu ${MYPGPKEY} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
     fi
-    CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
-    echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o '${CSV_ORG_OUTPUT_FILE}'"
-    bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o "${CSV_ORG_OUTPUT_FILE}"
-    if [ ${NO_SIGN} -ne 1 ] ; then
-        echoprompt "gpg -absu ${MYPGPKEY} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
-        gpg -absu ${MYPGPKEY} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
+    if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
+        CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
+        echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o '${CSV_ORG_OUTPUT_FILE}'"
+        bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o "${CSV_ORG_OUTPUT_FILE}"
+        if [ ${NO_SIGN} -ne 1 ] ; then
+            echoprompt "gpg -absu ${MYPGPKEY} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
+            gpg -absu ${MYPGPKEY} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
+        fi
     fi
 done
 
