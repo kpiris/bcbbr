@@ -18,8 +18,8 @@ including attachments.
 
 ## Backup script:
 
-It does an export both in json and csv formats (csv is for the case that one
-would like to import it into another password manager).
+It does an export in json and, optionally, csv formats (csv could be useful in
+case that one would like to import it into another password manager).
 
 It also retrieves attachments and stores them in a tar file (that tar file also
 contains a json list of the items those attachments belong to, used when
