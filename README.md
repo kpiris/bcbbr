@@ -53,7 +53,8 @@ UP**.
 > [!TIP]
 To guarantee that the backup will be 100% complete, the account should have
 access to ALL the collections in the organization(s), besides being an owner or
-admin of that(those) organization(s).
+admin of that(those) organization(s). And, any item in the "Unassigned"
+collection should not have attachments.
 
 
 ## Restore vault script:
