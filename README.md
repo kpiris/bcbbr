@@ -45,7 +45,9 @@ collections and items_”).
 > [!WARNING]
 **HOWEVER**, the attachments in organization items the account has NO access
 to, **WILL NOT BE BACKED UP**; again, regardless of that organization setting
-“_Owners and admins can manage all collections and items_”.
+“_Owners and admins can manage all collections and items_”. Attachments from
+items that are not assigned to any collection (they can be found within the
+"unassigned collection" on the admin console) **ALSO WONT BE BACKED UP**.
 
 > [!TIP]
 To guarantee that the backup will be 100% complete, the account should have
