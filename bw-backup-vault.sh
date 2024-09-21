@@ -113,6 +113,21 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         fi
     fi
     for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
+        ORGITEMIDS_EXPORTED="$(bw export --organizationid ${ORGANIZATION_ID} --format json --raw | jq -r '.items[] .id' | sort)"
+        ORGITEMIDS_READ="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id' | sort)"
+        if [ "${ORGITEMIDS_EXPORTED}" == "${ORGITEMIDS_READ}" ] ; then
+            /bin/true
+        else
+            NUMORGITEMIDS_EXPORTED="$(echo "${ORGITEMIDS_EXPORTED}" | wc -l)"
+            NUMORGITEMIDS_READ="$(echo "${ORGITEMIDS_READ}" | wc -l)"
+            WARNING_TEXT="### WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions. ###"
+            WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
+            echo2 ""
+            echo2 "${WARNING_HEAD}"
+            echo2 "${WARNING_TEXT}"
+            echo2 "${WARNING_HEAD}"
+            echo2 ""
+        fi
         ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != null)' || /bin/true)"
         if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
             /bin/true
