@@ -34,7 +34,9 @@ if [ "${DESTINATION_VAULT_ITEMS}" == "[]" ] ; then abort "ERROR: destination vau
 
 while [ "${1}" != "" ] ; do
     FLE="$(realpath ${1})"
-    if [ -e "${FLE}.sign" ] ; then
+    if [ ! -e "${FLE}.sign" ] ; then
+        echo -n "WARNING: \`${FLE}' is not signed. Press <INTRO> to continue or Ctrl+c to abort :" >&2 ; read dummy
+    else
         echoprompt "gpg --verify ${FLE}.sign"
         gpg --verify ${FLE}.sign
     fi
