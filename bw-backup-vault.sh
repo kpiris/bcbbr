@@ -93,7 +93,13 @@ done
 if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
     if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
-        /bin/true
+        WARNING_TEXT="### WARNING: no attachments found to export in personal vault. ###"
+        WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
+        echo2 ""
+        echo2 "${WARNING_HEAD}"
+        echo2 "${WARNING_TEXT}"
+        echo2 "${WARNING_HEAD}"
+        echo2 ""
     else
         DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output \"./\($parent.id)/\(.fileName)\""')"
         ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
@@ -130,7 +136,13 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         fi
         ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != null)' || /bin/true)"
         if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
-            /bin/true
+            WARNING_TEXT="### WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault. ###"
+            WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
+            echo2 ""
+            echo2 "${WARNING_HEAD}"
+            echo2 "${WARNING_TEXT}"
+            echo2 "${WARNING_HEAD}"
+            echo2 ""
         else
             DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS_ORG}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output \"./\($parent.id)/\(.fileName)\""')"
             ATTACHMENTS_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
