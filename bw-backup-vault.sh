@@ -35,6 +35,9 @@ while [ "${1:0:1}" == "-" ] ; do
     fi
 done
 
+export GPG_OPTIONS_SIGN="-absu ${MYPGPKEY}"
+export GPG_OPTIONS_ENCRYPT="-er ${MYPGPKEY}"
+
 export EXPORTSDIR="/dev/shm/"
 if [ "${1}" != "" ] ; then
     EXPORTSDIR="$(realpath ${1})"
@@ -56,36 +59,36 @@ ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.stat
 
 DATE_SUFFIX="$(date '+%Y%m%d%H%M%S')"
 JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.json.gpg"
-echoprompt "bw export --format json --raw | gpg -er ${MYPGPKEY} -o '${JSON_OUTPUT_FILE}'"
-bw export --format json --raw | gpg -er ${MYPGPKEY} -o "${JSON_OUTPUT_FILE}"
+echoprompt "bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_OUTPUT_FILE}'"
+bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_OUTPUT_FILE}"
 if [ ${NO_SIGN} -ne 1 ] ; then
-    echoprompt "gpg -absu ${MYPGPKEY} -o '${JSON_OUTPUT_FILE}.sign' '${JSON_OUTPUT_FILE}'"
-    gpg -absu ${MYPGPKEY} -o "${JSON_OUTPUT_FILE}.sign" "${JSON_OUTPUT_FILE}" || /bin/true
+    echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_OUTPUT_FILE}.sign' '${JSON_OUTPUT_FILE}'"
+    gpg ${GPG_OPTIONS_SIGN} -o "${JSON_OUTPUT_FILE}.sign" "${JSON_OUTPUT_FILE}" || /bin/true
 fi
 if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
     CSV_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.csv.gpg"
-    echoprompt "bw export --format csv --raw | gpg -er ${MYPGPKEY} -o '${CSV_OUTPUT_FILE}'"
-    bw export --format csv --raw | gpg -er ${MYPGPKEY} -o "${CSV_OUTPUT_FILE}"
+    echoprompt "bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_OUTPUT_FILE}'"
+    bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_OUTPUT_FILE}"
     if [ ${NO_SIGN} -ne 1 ] ; then
-        echoprompt "gpg -absu ${MYPGPKEY} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
-        gpg -absu ${MYPGPKEY} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
+        echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
+        gpg ${GPG_OPTIONS_SIGN} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
     fi
 fi
 for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
     JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
-    echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg -er ${MYPGPKEY} -o '${JSON_ORG_OUTPUT_FILE}'"
-    bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg -er ${MYPGPKEY} -o "${JSON_ORG_OUTPUT_FILE}"
+    echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_ORG_OUTPUT_FILE}'"
+    bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_ORG_OUTPUT_FILE}"
     if [ ${NO_SIGN} -ne 1 ] ; then
-        echoprompt "gpg -absu ${MYPGPKEY} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
-        gpg -absu ${MYPGPKEY} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
+        echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
+        gpg ${GPG_OPTIONS_SIGN} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
     fi
     if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
         CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
-        echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o '${CSV_ORG_OUTPUT_FILE}'"
-        bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg -er ${MYPGPKEY} -o "${CSV_ORG_OUTPUT_FILE}"
+        echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_ORG_OUTPUT_FILE}'"
+        bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_ORG_OUTPUT_FILE}"
         if [ ${NO_SIGN} -ne 1 ] ; then
-            echoprompt "gpg -absu ${MYPGPKEY} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
-            gpg -absu ${MYPGPKEY} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
+            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
+            gpg ${GPG_OPTIONS_SIGN} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
         fi
     fi
 done
@@ -109,13 +112,13 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         echo "${ITEMS_WITH_ATTACHMENTS}" > ./items.json
         echoprompt "${DOWNLOAD_ATTACHMENTS_COMMANDS}"
         echo "${DOWNLOAD_ATTACHMENTS_COMMANDS}" | bash -e
-        tar -v -c . | gpg -er ${MYPGPKEY} -o "${ATTACHMENTS_OUTPUT_FILE}"
+        tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_OUTPUT_FILE}"
         popd >/dev/null
         if [ "${ATTACHMENTS_TEMP_DIR:0:$((${#ATTACHMENTS_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_TEMP_DIR (\`${ATTACHMENTS_TEMP_DIR}')" ; fi
         rm -R "${ATTACHMENTS_TEMP_DIR}"
         if [ ${NO_SIGN} -ne 1 ] ; then
-            echoprompt "gpg -absu ${MYPGPKEY} -o '${ATTACHMENTS_OUTPUT_FILE}.sign' '${ATTACHMENTS_OUTPUT_FILE}'"
-            gpg -absu ${MYPGPKEY} -o "${ATTACHMENTS_OUTPUT_FILE}.sign" "${ATTACHMENTS_OUTPUT_FILE}" || /bin/true
+            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_OUTPUT_FILE}.sign' '${ATTACHMENTS_OUTPUT_FILE}'"
+            gpg ${GPG_OPTIONS_SIGN} -o "${ATTACHMENTS_OUTPUT_FILE}.sign" "${ATTACHMENTS_OUTPUT_FILE}" || /bin/true
         fi
     fi
     for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
@@ -151,13 +154,13 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
             echo "${ITEMS_WITH_ATTACHMENTS_ORG}" > ./items.json
             echoprompt "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}"
             echo "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}" | bash -e
-            tar -v -c . | gpg -er ${MYPGPKEY} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}"
+            tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}"
             popd >/dev/null
             if [ "${ATTACHMENTS_ORG_TEMP_DIR:0:$((${#ATTACHMENTS_ORG_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-org-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_ORG_TEMP_DIR (\`${ATTACHMENTS_ORG_TEMP_DIR}')" ; fi
             rm -R "${ATTACHMENTS_ORG_TEMP_DIR}"
             if [ ${NO_SIGN} -ne 1 ] ; then
-                echoprompt "gpg -absu ${MYPGPKEY} -o '${ATTACHMENTS_ORG_OUTPUT_FILE}.sign' '${ATTACHMENTS_ORG_OUTPUT_FILE}'"
-                gpg -absu ${MYPGPKEY} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}.sign" "${ATTACHMENTS_ORG_OUTPUT_FILE}" || /bin/true
+                echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_ORG_OUTPUT_FILE}.sign' '${ATTACHMENTS_ORG_OUTPUT_FILE}'"
+                gpg ${GPG_OPTIONS_SIGN} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}.sign" "${ATTACHMENTS_ORG_OUTPUT_FILE}" || /bin/true
             fi
         fi
     done
