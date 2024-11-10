@@ -43,14 +43,14 @@ if [ "${LASTEXPORT_VAULT_PER}" != "" ] ; then
         gpg --verify ${LASTEXPORT_VAULT_PER}.sign
     fi
     if [ "$(bw list items --organizationid null)" != "[]" ] ; then
-        echo2 "WARNING: Destination personal vault is not empty."
+        echo2 "WARNING: Destination individual vault is not empty."
     else
-        echo2 "INFO: personal vault is empty. OK."
+        echo2 "INFO: individual vault is empty. OK."
         if [ "$(bw list items --organizationid null --trash)" != "[]" ] ; then
-            echo2 "WARNING: Destination personal vault trash is not empty."
+            echo2 "WARNING: Destination individual vault trash is not empty."
         else
-            echo2 "INFO: personal vault trash is empty. OK."
-            TMPFILE_PER="$(mktemp -p /dev/shm/ -t bw-vault2restore-personal.XXXXXX)"
+            echo2 "INFO: individual vault trash is empty. OK."
+            TMPFILE_PER="$(mktemp -p /dev/shm/ -t bw-vault2restore-individual.XXXXXX)"
             echoprompt "gpg -d ${LASTEXPORT_VAULT_PER} > ${TMPFILE_PER}"
             gpg -d ${LASTEXPORT_VAULT_PER} > ${TMPFILE_PER}
             echoprompt "bw import bitwardenjson ${TMPFILE_PER}"

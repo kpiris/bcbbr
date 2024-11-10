@@ -96,7 +96,7 @@ done
 if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
     if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
-        WARNING_TEXT="### WARNING: no attachments found to export in personal vault. ###"
+        WARNING_TEXT="### WARNING: no attachments found to export in individual vault. ###"
         WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
         echo2 ""
         echo2 "${WARNING_HEAD}"
