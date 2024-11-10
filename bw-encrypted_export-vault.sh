@@ -38,6 +38,7 @@ ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.stat
 
 DATE_SUFFIX="$(date '+%Y%m%d%H%M%S')"
 JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_encrypted_export_${DATE_SUFFIX}.json"
+echoprompt "bw export --format encrypted_json --output '${JSON_OUTPUT_FILE}'"
 bw export --format encrypted_json --output "${JSON_OUTPUT_FILE}"
 NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
 if [ ${NUM_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
@@ -52,6 +53,7 @@ fi
 
 for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
     JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_encrypted_export_${DATE_SUFFIX}.json"
+    echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format encrypted_json --output '${JSON_ORG_OUTPUT_FILE}'"
     bw export --organizationid ${ORGANIZATION_ID} --format encrypted_json --output "${JSON_ORG_OUTPUT_FILE}"
     NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
     if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
