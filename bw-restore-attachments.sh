@@ -67,6 +67,7 @@ while [ "${1}" != "" ] ; do
                     echo2 "WARNING: item \`${DESTINATION_ITEM_ID}/${EXPORTED_ITEM_FIELDS}' already has attachments."
                 else
                     for ATTACHMENT_FILE in * ; do
+                        echoprompt "bw create attachment --file '${ATTACHMENT_FILE}' --itemid ${DESTINATION_ITEM_ID}"
                         bw create attachment --file "${ATTACHMENT_FILE}" --itemid ${DESTINATION_ITEM_ID}
                         rm -vf "${ATTACHMENT_FILE}"
                     done
