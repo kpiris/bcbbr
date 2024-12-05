@@ -119,6 +119,7 @@ done
 
 if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
+    ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
     if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
         WARNING_TEXT="### WARNING: no attachments found to export in individual vault. ###"
         WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
@@ -129,7 +130,6 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         echo2 ""
     else
         DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output \"./\($parent.id)/\(.fileName)\""')"
-        ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
         ATTACHMENTS_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
         ATTACHMENTS_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-attachments.XXXXXXXX)"
         pushd "${ATTACHMENTS_TEMP_DIR}" >/dev/null
