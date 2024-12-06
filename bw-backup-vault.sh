@@ -118,8 +118,8 @@ for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
 done
 
 if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
-    ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
     ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
+    ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
     if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
         WARNING_TEXT="### WARNING: no attachments found to export in individual vault. ###"
         WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
