@@ -138,7 +138,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         echo "${DOWNLOAD_ATTACHMENTS_COMMANDS}" | bash -e
         tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_OUTPUT_FILE}"
         popd >/dev/null
-        if [ "${ATTACHMENTS_TEMP_DIR:0:$((${#ATTACHMENTS_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_TEMP_DIR (\`${ATTACHMENTS_TEMP_DIR}')" ; fi
+        if [ "${ATTACHMENTS_PARENT_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_TEMP_DIR:0:$((${#ATTACHMENTS_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_TEMP_DIR (\`${ATTACHMENTS_TEMP_DIR}')" ; fi
         rm -R "${ATTACHMENTS_TEMP_DIR}"
         if [ ${NO_SIGN} -ne 1 ] ; then
             echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_OUTPUT_FILE}.sign' '${ATTACHMENTS_OUTPUT_FILE}'"
@@ -180,7 +180,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
             echo "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}" | bash -e
             tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}"
             popd >/dev/null
-            if [ "${ATTACHMENTS_ORG_TEMP_DIR:0:$((${#ATTACHMENTS_ORG_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-org-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_ORG_TEMP_DIR (\`${ATTACHMENTS_ORG_TEMP_DIR}')" ; fi
+            if [ "${ATTACHMENTS_PARENT_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_ORG_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_ORG_TEMP_DIR:0:$((${#ATTACHMENTS_ORG_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-org-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_ORG_TEMP_DIR (\`${ATTACHMENTS_ORG_TEMP_DIR}')" ; fi
             rm -R "${ATTACHMENTS_ORG_TEMP_DIR}"
             if [ ${NO_SIGN} -ne 1 ] ; then
                 echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_ORG_OUTPUT_FILE}.sign' '${ATTACHMENTS_ORG_OUTPUT_FILE}'"
