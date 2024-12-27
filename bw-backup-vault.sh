@@ -15,6 +15,16 @@ echoprompt () {
     echo2 "$*"
 }
 
+showwarning () {
+    WARNING_TEXT="$*"
+    WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
+    echo2 ""
+    echo2 "${WARNING_HEAD}"
+    echo2 "${WARNING_TEXT}"
+    echo2 "${WARNING_HEAD}"
+    echo2 ""
+}
+
 ################################################################################
 
 export WITH_ATTACHMENTS=1
@@ -59,13 +69,7 @@ ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.stat
 
 DATE_SUFFIX="$(date '+%Y%m%d%H%M%S')"
 if [ "$(bw list items --organizationid null)" == "[]" ] ; then
-    WARNING_TEXT="### WARNING: individual vault is empty. ###"
-    WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-    echo2 ""
-    echo2 "${WARNING_HEAD}"
-    echo2 "${WARNING_TEXT}"
-    echo2 "${WARNING_HEAD}"
-    echo2 ""
+    showwarning "### WARNING: individual vault is empty. ###"
 else
     JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.json.gpg"
     echoprompt "bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_OUTPUT_FILE}'"
@@ -87,24 +91,12 @@ fi
 if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
     NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
     if [ ${NUM_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-        WARNING_TEXT="### WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
-        WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-        echo2 ""
-        echo2 "${WARNING_HEAD}"
-        echo2 "${WARNING_TEXT}"
-        echo2 "${WARNING_HEAD}"
-        echo2 ""
+        showwarning "### WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
     fi
 fi
 for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
     if [ "$(bw list items --organizationid ${ORGANIZATION_ID})" == "[]" ] ; then
-        WARNING_TEXT="### WARNING: organization \`${ORGANIZATION_ID}' vault is empty. ###"
-        WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-        echo2 ""
-        echo2 "${WARNING_HEAD}"
-        echo2 "${WARNING_TEXT}"
-        echo2 "${WARNING_HEAD}"
-        echo2 ""
+        showwarning "### WARNING: organization \`${ORGANIZATION_ID}' vault is empty. ###"
     else
         JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
         echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_ORG_OUTPUT_FILE}'"
@@ -125,13 +117,7 @@ for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
         if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
             NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
             if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-                WARNING_TEXT="### WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
-                WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-                echo2 ""
-                echo2 "${WARNING_HEAD}"
-                echo2 "${WARNING_TEXT}"
-                echo2 "${WARNING_HEAD}"
-                echo2 ""
+                showwarning "### WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
             fi
         fi
     fi
@@ -141,13 +127,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
     ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
     if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
-        WARNING_TEXT="### WARNING: no attachments found to export in individual vault. ###"
-        WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-        echo2 ""
-        echo2 "${WARNING_HEAD}"
-        echo2 "${WARNING_TEXT}"
-        echo2 "${WARNING_HEAD}"
-        echo2 ""
+        showwarning "### WARNING: no attachments found to export in individual vault. ###"
     else
         DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output \"./\($parent.id)/\(.fileName)\""')"
         ATTACHMENTS_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
@@ -173,23 +153,11 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         else
             NUMORGITEMIDS_EXPORTED="$(echo "${ORGITEMIDS_EXPORTED}" | wc -l)"
             NUMORGITEMIDS_READ="$(echo "${ORGITEMIDS_READ}" | wc -l)"
-            WARNING_TEXT="### WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions. ###"
-            WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-            echo2 ""
-            echo2 "${WARNING_HEAD}"
-            echo2 "${WARNING_TEXT}"
-            echo2 "${WARNING_HEAD}"
-            echo2 ""
+            showwarning "### WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions. ###"
         fi
         ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != null)' || /bin/true)"
         if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
-            WARNING_TEXT="### WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault. ###"
-            WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-            echo2 ""
-            echo2 "${WARNING_HEAD}"
-            echo2 "${WARNING_TEXT}"
-            echo2 "${WARNING_HEAD}"
-            echo2 ""
+            showwarning "### WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault. ###"
         else
             DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS_ORG}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output \"./\($parent.id)/\(.fileName)\""')"
             ATTACHMENTS_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
