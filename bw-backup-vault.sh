@@ -58,20 +58,30 @@ USER_ID="$(echo "${BWSTATUS}" | jq -r '.userId')"
 ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.status==2 and (.type==0 or .type==1)) | .id')"
 
 DATE_SUFFIX="$(date '+%Y%m%d%H%M%S')"
-JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.json.gpg"
-echoprompt "bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_OUTPUT_FILE}'"
-bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_OUTPUT_FILE}"
-if [ ${NO_SIGN} -ne 1 ] ; then
-    echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_OUTPUT_FILE}.sign' '${JSON_OUTPUT_FILE}'"
-    gpg ${GPG_OPTIONS_SIGN} -o "${JSON_OUTPUT_FILE}.sign" "${JSON_OUTPUT_FILE}" || /bin/true
-fi
-if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
-    CSV_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.csv.gpg"
-    echoprompt "bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_OUTPUT_FILE}'"
-    bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_OUTPUT_FILE}"
+if [ "$(bw list items --organizationid null)" == "[]" ] ; then
+    WARNING_TEXT="### WARNING: individual vault is empty. ###"
+    WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
+    echo2 ""
+    echo2 "${WARNING_HEAD}"
+    echo2 "${WARNING_TEXT}"
+    echo2 "${WARNING_HEAD}"
+    echo2 ""
+else
+    JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.json.gpg"
+    echoprompt "bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_OUTPUT_FILE}'"
+    bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_OUTPUT_FILE}"
     if [ ${NO_SIGN} -ne 1 ] ; then
-        echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
-        gpg ${GPG_OPTIONS_SIGN} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
+        echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_OUTPUT_FILE}.sign' '${JSON_OUTPUT_FILE}'"
+        gpg ${GPG_OPTIONS_SIGN} -o "${JSON_OUTPUT_FILE}.sign" "${JSON_OUTPUT_FILE}" || /bin/true
+    fi
+    if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
+        CSV_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.csv.gpg"
+        echoprompt "bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_OUTPUT_FILE}'"
+        bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_OUTPUT_FILE}"
+        if [ ${NO_SIGN} -ne 1 ] ; then
+            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
+            gpg ${GPG_OPTIONS_SIGN} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
+        fi
     fi
 fi
 if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
@@ -87,32 +97,42 @@ if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
     fi
 fi
 for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
-    JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
-    echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_ORG_OUTPUT_FILE}'"
-    bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_ORG_OUTPUT_FILE}"
-    if [ ${NO_SIGN} -ne 1 ] ; then
-        echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
-        gpg ${GPG_OPTIONS_SIGN} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
-    fi
-    if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
-        CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
-        echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_ORG_OUTPUT_FILE}'"
-        bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_ORG_OUTPUT_FILE}"
+    if [ "$(bw list items --organizationid ${ORGANIZATION_ID})" == "[]" ] ; then
+        WARNING_TEXT="### WARNING: organization \`${ORGANIZATION_ID}' vault is empty. ###"
+        WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
+        echo2 ""
+        echo2 "${WARNING_HEAD}"
+        echo2 "${WARNING_TEXT}"
+        echo2 "${WARNING_HEAD}"
+        echo2 ""
+    else
+        JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
+        echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_ORG_OUTPUT_FILE}'"
+        bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_ORG_OUTPUT_FILE}"
         if [ ${NO_SIGN} -ne 1 ] ; then
-            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
-            gpg ${GPG_OPTIONS_SIGN} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
+            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
+            gpg ${GPG_OPTIONS_SIGN} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
         fi
-    fi
-    if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-        NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
-        if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-            WARNING_TEXT="### WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
-            WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
-            echo2 ""
-            echo2 "${WARNING_HEAD}"
-            echo2 "${WARNING_TEXT}"
-            echo2 "${WARNING_HEAD}"
-            echo2 ""
+        if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
+            CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
+            echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_ORG_OUTPUT_FILE}'"
+            bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_ORG_OUTPUT_FILE}"
+            if [ ${NO_SIGN} -ne 1 ] ; then
+                echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
+                gpg ${GPG_OPTIONS_SIGN} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
+            fi
+        fi
+        if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
+            NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
+            if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
+                WARNING_TEXT="### WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
+                WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
+                echo2 ""
+                echo2 "${WARNING_HEAD}"
+                echo2 "${WARNING_TEXT}"
+                echo2 "${WARNING_HEAD}"
+                echo2 ""
+            fi
         fi
     fi
 done
