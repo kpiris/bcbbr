@@ -73,9 +73,8 @@ organization attachments backup present in the exports directory.
 
 > [!TIP]
 If one should need to restore more than one organization vault, a manual import
-via, for example, the web vault can be done. After that, the restore vault
-attachments script can be run with all the attachments backup files as
-arguments.
+via the admin console can be done. After that, the restore vault attachments
+script can be run with all the attachments backup files as arguments.
 
 
 ## Restore attachments script:
