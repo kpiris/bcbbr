@@ -16,7 +16,7 @@ echoprompt () {
 }
 
 showwarning () {
-    WARNING_TEXT="$*"
+    WARNING_TEXT="### $* ###"
     WARNING_HEAD="$(echo "${WARNING_TEXT}" | sed 's/./#/g')"
     echo2 ""
     echo2 "${WARNING_HEAD}"
@@ -48,27 +48,27 @@ ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.stat
 
 DATE_SUFFIX="$(date '+%Y%m%d%H%M%S')"
 if [ "$(bw list items --organizationid null)" == "[]" ] ; then
-    showwarning "### WARNING: individual vault is empty. ###"
+    showwarning "WARNING: individual vault is empty."
 else
     JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_encrypted_export_${DATE_SUFFIX}.json"
     echoprompt "bw export --format encrypted_json --output '${JSON_OUTPUT_FILE}'"
     bw export --format encrypted_json --output "${JSON_OUTPUT_FILE}"
     NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
     if [ ${NUM_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-        showwarning "### WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
+        showwarning "WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
     fi
 fi
 
 for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
     if [ "$(bw list items --organizationid ${ORGANIZATION_ID})" == "[]" ] ; then
-        showwarning "### WARNING: organization \`${ORGANIZATION_ID}' vault is empty. ###"
+        showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault is empty."
     else
         JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_encrypted_export_${DATE_SUFFIX}.json"
         echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format encrypted_json --output '${JSON_ORG_OUTPUT_FILE}'"
         bw export --organizationid ${ORGANIZATION_ID} --format encrypted_json --output "${JSON_ORG_OUTPUT_FILE}"
         NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
         if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-            showwarning "### WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up. ###"
+            showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
         fi
     fi
 done
