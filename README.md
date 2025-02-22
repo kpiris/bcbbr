@@ -76,6 +76,13 @@ If one should need to restore more than one organization vault, a manual import
 via the admin console can be done. After that, the restore vault attachments
 script can be run with all the attachments backup files as arguments.
 
+> [!WARNING]
+While folders and items belonging to them are fully exported in the json file,
+there is an important caveat to take in account regarding organization items
+included in folders: When you import an exported vault into an organization
+vault, all items should be fully imported; **HOWEVER**, the imported items will
+not be included into the folders they belonged to when they were exported.
+
 
 ## Restore attachments script:
 
