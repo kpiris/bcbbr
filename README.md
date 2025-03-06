@@ -118,3 +118,5 @@ Also: this encrypted export script **does not back up any attachment** (it will
 warn you if there are any in any encrypt-exported vault).
 
 
+Credit: Attachments export part _based on_
+[ickabalan / bitwarden-attachment-exporter](https://github.com/ckabalan/bitwarden-attachment-exporter/)
