@@ -70,9 +70,12 @@ while [ "${1}" != "" ] ; do
                         if [ -f "${ATTACHMENT_FILE}" ] ; then
                             echoprompt "bw create attachment --file '${ATTACHMENT_FILE}' --itemid ${DESTINATION_ITEM_ID}"
                             bw create attachment --file "${ATTACHMENT_FILE}" --itemid ${DESTINATION_ITEM_ID}
+                            rm -vf "${ATTACHMENT_FILE}"
+                        elif [ -d "${ATTACHMENT_FILE}" ] ; then
+                            rmdir -v --ignore-fail-on-non-empty "${ATTACHMENT_FILE}"
+                        else
+                            echo2 "WARNING: attachment \`${ATTACHMENT_FILE}' from item \`${DESTINATION_ITEM_ID}' is not a file or a directory (SHOULD_NOT_HAPPEN)."
                         fi
-                        test -f "${ATTACHMENT_FILE}" && rm -vf "${ATTACHMENT_FILE}"
-                        test -d "${ATTACHMENT_FILE}" && rmdir -v --ignore-fail-on-non-empty "${ATTACHMENT_FILE}"
                     done
                 fi
             fi
