@@ -56,6 +56,9 @@ access to ALL the collections in the organization(s), besides being an owner or
 admin of that(those) organization(s). And any item in the "Unassigned"
 collection should not have attachments.
 
+Credit: Attachments export part _based on_
+[ickabalan / bitwarden-attachment-exporter](https://github.com/ckabalan/bitwarden-attachment-exporter/).
+
 
 ## Restore vault script:
 
@@ -100,7 +103,3 @@ vault.
   * To restore attachments, the account does not need to be admin or owner of
     any organization, BUT it does need to have access to the items those
     attachments belong to.
-
-
-Credit: Attachments export part _based on_
-[ickabalan / bitwarden-attachment-exporter](https://github.com/ckabalan/bitwarden-attachment-exporter/).
