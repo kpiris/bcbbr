@@ -102,21 +102,5 @@ vault.
     attachments belong to.
 
 
-## Encrypted export script:
-
-There is also a script to do a _quick_ **account restricted** encrypted export.
-
-> [!WARNING]
-This encrypted export can be restored manually (from the web vault, for
-example). And can only be restored on the same Bitwarden account that generated
-it. Check [Bitwarden
-documentation](https://bitwarden.com/help/encrypted-export/) for more
-information about this.
-
-> [!WARNING]
-Also: this encrypted export script **does not back up any attachment** (it will
-warn you if there are any in any encrypt-exported vault).
-
-
 Credit: Attachments export part _based on_
 [ickabalan / bitwarden-attachment-exporter](https://github.com/ckabalan/bitwarden-attachment-exporter/).
