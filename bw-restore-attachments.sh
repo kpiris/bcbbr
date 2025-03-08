@@ -74,7 +74,7 @@ while [ "${1}" != "" ] ; do
                         elif [ -d "${ATTACHMENT_FILE}" ] ; then
                             rmdir -v --ignore-fail-on-non-empty "${ATTACHMENT_FILE}"
                         else
-                            echo2 "WARNING: attachment \`${ATTACHMENT_FILE}' from item \`${DESTINATION_ITEM_ID}' is not a file or a directory (SHOULD_NOT_HAPPEN)."
+                            echo2 "WARNING: attachment \`${ATTACHMENT_FILE}' from item \`${EXPORTED_ITEM_ID}' is not a file or a directory (SHOULD_NOT_HAPPEN)."
                         fi
                     done
                 fi
