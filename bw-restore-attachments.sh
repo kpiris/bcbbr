@@ -66,10 +66,13 @@ while [ "${1}" != "" ] ; do
                 if [ "${DESTINATION_ITEM_ID_WITH_ATTACHMENTS_ALREADY}" != "" ] ; then
                     echo2 "WARNING: item \`${DESTINATION_ITEM_ID}/${EXPORTED_ITEM_FIELDS}' already has attachments."
                 else
-                    for ATTACHMENT_FILE in * ; do
-                        echoprompt "bw create attachment --file '${ATTACHMENT_FILE}' --itemid ${DESTINATION_ITEM_ID}"
-                        bw create attachment --file "${ATTACHMENT_FILE}" --itemid ${DESTINATION_ITEM_ID}
-                        rm -vf "${ATTACHMENT_FILE}"
+                    for ATTACHMENT_FILE in */* * ; do
+                        if [ -f "${ATTACHMENT_FILE}" ] ; then
+                            echoprompt "bw create attachment --file '${ATTACHMENT_FILE}' --itemid ${DESTINATION_ITEM_ID}"
+                            bw create attachment --file "${ATTACHMENT_FILE}" --itemid ${DESTINATION_ITEM_ID}
+                        fi
+                        test -f "${ATTACHMENT_FILE}" && rm -vf "${ATTACHMENT_FILE}"
+                        test -d "${ATTACHMENT_FILE}" && rmdir -v --ignore-fail-on-non-empty "${ATTACHMENT_FILE}"
                     done
                 fi
             fi

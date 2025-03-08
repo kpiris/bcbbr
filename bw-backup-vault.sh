@@ -129,7 +129,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
         showwarning "WARNING: no attachments found to export in individual vault."
     else
-        DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output ./\($parent.id)/"')"
+        DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
         ATTACHMENTS_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
         ATTACHMENTS_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-attachments.XXXXXXXX)"
         pushd "${ATTACHMENTS_TEMP_DIR}" >/dev/null
@@ -159,7 +159,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
             showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
         else
-            DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS_ORG}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output ./\($parent.id)/"')"
+            DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS_ORG}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
             ATTACHMENTS_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
             ATTACHMENTS_ORG_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-org-attachments.XXXXXXXX)"
             pushd "${ATTACHMENTS_ORG_TEMP_DIR}" >/dev/null
