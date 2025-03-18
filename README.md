@@ -93,7 +93,7 @@ It should be called with the files containing the attachments backups as
 arguments. It uploads those attachments to the items in the currently unlocked
 vault.
 
-  * It uses the items.json export to find which item in the new vault every
+  * It uses the items.json file to find which item in the new vault every
     attachment belongs to (note that the item_id on the export can be different
     from the item_id in the destination vault).
 
