@@ -57,7 +57,7 @@ admin of that(those) organization(s). And any item in the "Unassigned"
 collection should not have attachments.
 
 Credit: Attachments export part _based on_
-[ickabalan / bitwarden-attachment-exporter](https://github.com/ckabalan/bitwarden-attachment-exporter/).
+[ckabalan / bitwarden-attachment-exporter](https://github.com/ckabalan/bitwarden-attachment-exporter/).
 
 
 ## Restore vault script:
