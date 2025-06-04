@@ -103,3 +103,14 @@ vault.
   * To restore attachments, the account does not need to be admin or owner of
     any organization, BUT it does need to have access to the items those
     attachments belong to.
+
+
+## TODO:
+
+Bitwarden CLI, since version 2025.5.0, supports exporting in zip format.
+
+And that zip file includes attachments.
+
+I plan on adding support for this new format to these scripts (on backup and
+also on restore). But only after Bitwarden releases a CLI version that includes
+[this PR](https://github.com/bitwarden/clients/pull/14400).
