@@ -115,5 +115,5 @@ also on restore). But I will probably wait after Bitwarden releases a CLI
 version that includes [this
 PR](https://github.com/bitwarden/clients/pull/14400).
 
-And, **maybe**, also until the export zip format is supported for organization
+And, **maybe**, also until the export zip format is supported on organization
 vaults.
