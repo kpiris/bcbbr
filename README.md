@@ -107,9 +107,8 @@ vault.
 
 ## TODO:
 
-Bitwarden CLI, since version 2025.5.0, supports exporting in zip format.
-
-And that zip file includes attachments.
+Bitwarden CLI, since version 2025.5.0, supports exporting in zip format; that
+includes attachments in the exported zip file.
 
 I plan on adding support for this new format to these scripts (on backup and
 also on restore). But only after Bitwarden releases a CLI version that includes
