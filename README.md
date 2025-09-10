@@ -101,7 +101,7 @@ vault.
     them (to prevent duplicates).
 
   * To restore attachments, the account does not need to be admin or owner of
-    any organization, BUT it does need to have access to the items those
+    any organization, BUT it does need to have write access to the items those
     attachments belong to.
 
 
