@@ -31,7 +31,7 @@ export WITH_ATTACHMENTS=1
 export NO_SIGN=0
 export ALSO_EXPORT_CSV_FORMAT=0
 export DO_BACKUP_VAULT_INDIVIDUAL=1
-export DO_BACKUP_VAULT_ORGS=1
+export DO_BACKUP_VAULT_ORG=1
 while [ "${1:0:1}" == "-" ] ; do
     if [ "${1}" == "--without-attachments" ] ; then
         WITH_ATTACHMENTS=0
@@ -46,14 +46,14 @@ while [ "${1:0:1}" == "-" ] ; do
         DO_BACKUP_VAULT_INDIVIDUAL=0
         shift
     elif [ "${1}" == "--onlyindividual" -o "${1}" == "--noorg" ] ; then
-        DO_BACKUP_VAULT_ORGS=0
+        DO_BACKUP_VAULT_ORG=0
         shift
     else
         abort "ERROR: unknown option (\`${1}')."
     fi
 done
 
-if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 -a ${DO_BACKUP_VAULT_ORGS} -eq 0 ] ; then
+if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 -a ${DO_BACKUP_VAULT_ORG} -eq 0 ] ; then
     abort "ERROR: You have chosen to skip backing up individual AND organizations vaults."
 fi
 
@@ -111,7 +111,7 @@ else
         fi
     fi
 fi
-if [ ${DO_BACKUP_VAULT_ORGS} -eq 0 ] ; then
+if [ ${DO_BACKUP_VAULT_ORG} -eq 0 ] ; then
     showwarning "WARNING: skipping organizations vaults."
 else
     for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
@@ -145,10 +145,10 @@ else
 fi
 
 if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
+    ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
     if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 ] ; then
         /bin/true
     else
-        ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
         ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
         if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
             showwarning "WARNING: no attachments found to export in individual vault."
@@ -170,7 +170,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
             fi
         fi
     fi
-    if [ ${DO_BACKUP_VAULT_ORGS} -eq 0 ] ; then
+    if [ ${DO_BACKUP_VAULT_ORG} -eq 0 ] ; then
         /bin/true
     else
         for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
