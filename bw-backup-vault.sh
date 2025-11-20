@@ -30,6 +30,8 @@ showwarning () {
 export WITH_ATTACHMENTS=1
 export NO_SIGN=0
 export ALSO_EXPORT_CSV_FORMAT=0
+export DO_BACKUP_VAULT_INDIVIDUAL=1
+export DO_BACKUP_VAULT_ORGS=1
 while [ "${1:0:1}" == "-" ] ; do
     if [ "${1}" == "--without-attachments" ] ; then
         WITH_ATTACHMENTS=0
@@ -40,10 +42,20 @@ while [ "${1:0:1}" == "-" ] ; do
     elif [ "${1}" == "--csv" -o "${1}" == "--export-csv" ] ; then
         ALSO_EXPORT_CSV_FORMAT=1
         shift
+    elif [ "${1}" == "--onlyorg" -o "${1}" == "--noindividual" ] ; then
+        DO_BACKUP_VAULT_INDIVIDUAL=0
+        shift
+    elif [ "${1}" == "--onlyindividual" -o "${1}" == "--noorg" ] ; then
+        DO_BACKUP_VAULT_ORGS=0
+        shift
     else
         abort "ERROR: unknown option (\`${1}')."
     fi
 done
+
+if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 -a ${DO_BACKUP_VAULT_ORGS} -eq 0 ] ; then
+    abort "ERROR: You have chosen to skip backing up individual AND organizations vaults."
+fi
 
 export GPG_OPTIONS_SIGN="-absu ${MYPGPKEY}"
 export GPG_OPTIONS_ENCRYPT="-er ${MYPGPKEY}"
@@ -68,112 +80,129 @@ USER_ID="$(echo "${BWSTATUS}" | jq -r '.userId')"
 ORGANIZATION_IDS_TO_BACKUP="$(bw list organizations | jq -r '.[] | select (.status==2 and (.type==0 or .type==1)) | .id')"
 
 DATE_SUFFIX="$(date '+%Y%m%d%H%M%S')"
-if [ "$(bw list items --organizationid null)" == "[]" ] ; then
-    showwarning "WARNING: individual vault is empty."
+
+if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 ] ; then
+    showwarning "WARNING: skipping individual vault."
 else
-    JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.json.gpg"
-    echoprompt "bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_OUTPUT_FILE}'"
-    bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_OUTPUT_FILE}"
-    if [ ${NO_SIGN} -ne 1 ] ; then
-        echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_OUTPUT_FILE}.sign' '${JSON_OUTPUT_FILE}'"
-        gpg ${GPG_OPTIONS_SIGN} -o "${JSON_OUTPUT_FILE}.sign" "${JSON_OUTPUT_FILE}" || /bin/true
-    fi
-    if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
-        CSV_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.csv.gpg"
-        echoprompt "bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_OUTPUT_FILE}'"
-        bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_OUTPUT_FILE}"
-        if [ ${NO_SIGN} -ne 1 ] ; then
-            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
-            gpg ${GPG_OPTIONS_SIGN} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
-        fi
-    fi
-fi
-if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-    NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
-    if [ ${NUM_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-        showwarning "WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
-    fi
-fi
-for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
-    if [ "$(bw list items --organizationid ${ORGANIZATION_ID})" == "[]" ] ; then
-        showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault is empty."
+    if [ "$(bw list items --organizationid null)" == "[]" ] ; then
+        showwarning "WARNING: individual vault is empty."
     else
-        JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
-        echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_ORG_OUTPUT_FILE}'"
-        bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_ORG_OUTPUT_FILE}"
+        JSON_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.json.gpg"
+        echoprompt "bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_OUTPUT_FILE}'"
+        bw export --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_OUTPUT_FILE}"
         if [ ${NO_SIGN} -ne 1 ] ; then
-            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
-            gpg ${GPG_OPTIONS_SIGN} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
+            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_OUTPUT_FILE}.sign' '${JSON_OUTPUT_FILE}'"
+            gpg ${GPG_OPTIONS_SIGN} -o "${JSON_OUTPUT_FILE}.sign" "${JSON_OUTPUT_FILE}" || /bin/true
         fi
         if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
-            CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
-            echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_ORG_OUTPUT_FILE}'"
-            bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_ORG_OUTPUT_FILE}"
+            CSV_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_export_${DATE_SUFFIX}.csv.gpg"
+            echoprompt "bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_OUTPUT_FILE}'"
+            bw export --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_OUTPUT_FILE}"
             if [ ${NO_SIGN} -ne 1 ] ; then
-                echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
-                gpg ${GPG_OPTIONS_SIGN} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
-            fi
-        fi
-        if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-            NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
-            if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-                showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
+                echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_OUTPUT_FILE}.sign' '${CSV_OUTPUT_FILE}'"
+                gpg ${GPG_OPTIONS_SIGN} -o "${CSV_OUTPUT_FILE}.sign" "${CSV_OUTPUT_FILE}" || /bin/true
             fi
         fi
     fi
-done
-
-if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
-    ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
-    ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
-    if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
-        showwarning "WARNING: no attachments found to export in individual vault."
-    else
-        DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
-        ATTACHMENTS_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
-        ATTACHMENTS_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-attachments.XXXXXXXX)"
-        pushd "${ATTACHMENTS_TEMP_DIR}" >/dev/null
-        echo "${ITEMS_WITH_ATTACHMENTS}" > ./items.json
-        echoprompt "${DOWNLOAD_ATTACHMENTS_COMMANDS}"
-        echo "${DOWNLOAD_ATTACHMENTS_COMMANDS}" | bash -e
-        tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_OUTPUT_FILE}"
-        popd >/dev/null
-        if [ "${ATTACHMENTS_PARENT_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_TEMP_DIR:0:$((${#ATTACHMENTS_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_TEMP_DIR (\`${ATTACHMENTS_TEMP_DIR}')" ; fi
-        rm -R "${ATTACHMENTS_TEMP_DIR}"
-        if [ ${NO_SIGN} -ne 1 ] ; then
-            echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_OUTPUT_FILE}.sign' '${ATTACHMENTS_OUTPUT_FILE}'"
-            gpg ${GPG_OPTIONS_SIGN} -o "${ATTACHMENTS_OUTPUT_FILE}.sign" "${ATTACHMENTS_OUTPUT_FILE}" || /bin/true
+    if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
+        NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
+        if [ ${NUM_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
+            showwarning "WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
         fi
     fi
+fi
+if [ ${DO_BACKUP_VAULT_ORGS} -eq 0 ] ; then
+    showwarning "WARNING: skipping organizations vaults."
+else
     for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
-        ORGITEMIDS_EXPORTED="$(bw export --organizationid ${ORGANIZATION_ID} --format json --raw | jq -r '.items[] .id' | sort)"
-        ORGITEMIDS_READ="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id' | sort)"
-        if [ "${ORGITEMIDS_EXPORTED}" == "${ORGITEMIDS_READ}" ] ; then
-            /bin/true
+        if [ "$(bw list items --organizationid ${ORGANIZATION_ID})" == "[]" ] ; then
+            showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault is empty."
         else
-            NUMORGITEMIDS_EXPORTED="$(echo "${ORGITEMIDS_EXPORTED}" | wc -l)"
-            NUMORGITEMIDS_READ="$(echo "${ORGITEMIDS_READ}" | wc -l)"
-            showwarning "WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions."
-        fi
-        ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != null)' || /bin/true)"
-        if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
-            showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
-        else
-            DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS_ORG}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
-            ATTACHMENTS_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
-            ATTACHMENTS_ORG_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-org-attachments.XXXXXXXX)"
-            pushd "${ATTACHMENTS_ORG_TEMP_DIR}" >/dev/null
-            echo "${ITEMS_WITH_ATTACHMENTS_ORG}" > ./items.json
-            echoprompt "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}"
-            echo "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}" | bash -e
-            tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}"
-            popd >/dev/null
-            if [ "${ATTACHMENTS_PARENT_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_ORG_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_ORG_TEMP_DIR:0:$((${#ATTACHMENTS_ORG_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-org-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_ORG_TEMP_DIR (\`${ATTACHMENTS_ORG_TEMP_DIR}')" ; fi
-            rm -R "${ATTACHMENTS_ORG_TEMP_DIR}"
+            JSON_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.json.gpg"
+            echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${JSON_ORG_OUTPUT_FILE}'"
+            bw export --organizationid ${ORGANIZATION_ID} --format json --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${JSON_ORG_OUTPUT_FILE}"
             if [ ${NO_SIGN} -ne 1 ] ; then
-                echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_ORG_OUTPUT_FILE}.sign' '${ATTACHMENTS_ORG_OUTPUT_FILE}'"
-                gpg ${GPG_OPTIONS_SIGN} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}.sign" "${ATTACHMENTS_ORG_OUTPUT_FILE}" || /bin/true
+                echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${JSON_ORG_OUTPUT_FILE}.sign' '${JSON_ORG_OUTPUT_FILE}'"
+                gpg ${GPG_OPTIONS_SIGN} -o "${JSON_ORG_OUTPUT_FILE}.sign" "${JSON_ORG_OUTPUT_FILE}" || /bin/true
+            fi
+            if [ ${ALSO_EXPORT_CSV_FORMAT} -eq 1 ] ; then
+                CSV_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_export_${DATE_SUFFIX}.csv.gpg"
+                echoprompt "bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o '${CSV_ORG_OUTPUT_FILE}'"
+                bw export --organizationid ${ORGANIZATION_ID} --format csv --raw | gpg ${GPG_OPTIONS_ENCRYPT} -o "${CSV_ORG_OUTPUT_FILE}"
+                if [ ${NO_SIGN} -ne 1 ] ; then
+                    echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${CSV_ORG_OUTPUT_FILE}.sign' '${CSV_ORG_OUTPUT_FILE}'"
+                    gpg ${GPG_OPTIONS_SIGN} -o "${CSV_ORG_OUTPUT_FILE}.sign" "${CSV_ORG_OUTPUT_FILE}" || /bin/true
+                fi
+            fi
+            if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
+                NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
+                if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
+                    showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
+                fi
             fi
         fi
     done
+fi
+
+if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
+    if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 ] ; then
+        /bin/true
+    else
+        ATTACHMENTS_PARENT_TEMP_DIR="/dev/shm"
+        ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
+        if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
+            showwarning "WARNING: no attachments found to export in individual vault."
+        else
+            DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
+            ATTACHMENTS_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
+            ATTACHMENTS_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-attachments.XXXXXXXX)"
+            pushd "${ATTACHMENTS_TEMP_DIR}" >/dev/null
+            echo "${ITEMS_WITH_ATTACHMENTS}" > ./items.json
+            echoprompt "${DOWNLOAD_ATTACHMENTS_COMMANDS}"
+            echo "${DOWNLOAD_ATTACHMENTS_COMMANDS}" | bash -e
+            tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_OUTPUT_FILE}"
+            popd >/dev/null
+            if [ "${ATTACHMENTS_PARENT_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_TEMP_DIR:0:$((${#ATTACHMENTS_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_TEMP_DIR (\`${ATTACHMENTS_TEMP_DIR}')" ; fi
+            rm -R "${ATTACHMENTS_TEMP_DIR}"
+            if [ ${NO_SIGN} -ne 1 ] ; then
+                echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_OUTPUT_FILE}.sign' '${ATTACHMENTS_OUTPUT_FILE}'"
+                gpg ${GPG_OPTIONS_SIGN} -o "${ATTACHMENTS_OUTPUT_FILE}.sign" "${ATTACHMENTS_OUTPUT_FILE}" || /bin/true
+            fi
+        fi
+    fi
+    if [ ${DO_BACKUP_VAULT_ORGS} -eq 0 ] ; then
+        /bin/true
+    else
+        for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
+            ORGITEMIDS_EXPORTED="$(bw export --organizationid ${ORGANIZATION_ID} --format json --raw | jq -r '.items[] .id' | sort)"
+            ORGITEMIDS_READ="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id' | sort)"
+            if [ "${ORGITEMIDS_EXPORTED}" == "${ORGITEMIDS_READ}" ] ; then
+                /bin/true
+            else
+                NUMORGITEMIDS_EXPORTED="$(echo "${ORGITEMIDS_EXPORTED}" | wc -l)"
+                NUMORGITEMIDS_READ="$(echo "${ORGITEMIDS_READ}" | wc -l)"
+                showwarning "WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions."
+            fi
+            ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != null)' || /bin/true)"
+            if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
+                showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
+            else
+                DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS_ORG}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
+                ATTACHMENTS_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
+                ATTACHMENTS_ORG_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-org-attachments.XXXXXXXX)"
+                pushd "${ATTACHMENTS_ORG_TEMP_DIR}" >/dev/null
+                echo "${ITEMS_WITH_ATTACHMENTS_ORG}" > ./items.json
+                echoprompt "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}"
+                echo "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}" | bash -e
+                tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}"
+                popd >/dev/null
+                if [ "${ATTACHMENTS_PARENT_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_ORG_TEMP_DIR}" == "" ] || [ "${ATTACHMENTS_ORG_TEMP_DIR:0:$((${#ATTACHMENTS_ORG_TEMP_DIR}-8))}" != "${ATTACHMENTS_PARENT_TEMP_DIR}/bw-backup-vault-org-attachments." ] ; then abort "ERROR: wrong value of ATTACHMENTS_ORG_TEMP_DIR (\`${ATTACHMENTS_ORG_TEMP_DIR}')" ; fi
+                rm -R "${ATTACHMENTS_ORG_TEMP_DIR}"
+                if [ ${NO_SIGN} -ne 1 ] ; then
+                    echoprompt "gpg ${GPG_OPTIONS_SIGN} -o '${ATTACHMENTS_ORG_OUTPUT_FILE}.sign' '${ATTACHMENTS_ORG_OUTPUT_FILE}'"
+                    gpg ${GPG_OPTIONS_SIGN} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}.sign" "${ATTACHMENTS_ORG_OUTPUT_FILE}" || /bin/true
+                fi
+            fi
+        done
+    fi
 fi
