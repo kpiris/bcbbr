@@ -105,7 +105,7 @@ else
         fi
     fi
     if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-        NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
+        NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
         if [ ${NUM_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
             showwarning "WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
         fi
@@ -135,7 +135,7 @@ else
                 fi
             fi
             if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-                NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != null) | .id' | wc -l)"
+                NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
                 if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
                     showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
                 fi
@@ -149,7 +149,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 ] ; then
         /bin/true
     else
-        ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != null)' || /bin/true)"
+        ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
         if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
             showwarning "WARNING: no attachments found to export in individual vault."
         else
@@ -183,7 +183,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
                 NUMORGITEMIDS_READ="$(echo "${ORGITEMIDS_READ}" | wc -l)"
                 showwarning "WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions."
             fi
-            ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != null)' || /bin/true)"
+            ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
             if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
                 showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
             else
