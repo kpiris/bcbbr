@@ -50,6 +50,10 @@ items that are not assigned to any collection (the ones that can be found in
 the "Unassigned" collection on the admin console) **ALSO WILL NOT BE BACKED
 UP**.
 
+> [!WARNING]
+Up to, at least, version 2025.12.1 the item field customizing the _Autofill On
+Page Load_ option for every item does not get exported.
+
 > [!TIP]
 To guarantee that the backup will be 100% complete, the account should have
 access to ALL the collections in the organization(s), besides being an owner or
