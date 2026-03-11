@@ -135,9 +135,9 @@ else
                 fi
             fi
             if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-                NUMORG_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
-                if [ ${NUMORG_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
-                    showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUMORG_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
+                NUM_ORGITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
+                if [ ${NUM_ORGITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
+                    showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUM_ORGITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
                 fi
             fi
         fi
@@ -183,15 +183,15 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
                 NUMORGITEMIDS_READ="$(echo "${ORGITEMIDS_READ}" | wc -l)"
                 showwarning "WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions."
             fi
-            ITEMS_WITH_ATTACHMENTS_ORG="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
-            if [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS_ORG}" == "[]" ] ; then
+            ORGITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
+            if [ "${ORGITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ORGITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
                 showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
             else
-                DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS_ORG}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
+                DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ORGITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
                 ATTACHMENTS_ORG_OUTPUT_FILE="${EXPORTSDIR}/bitwarden_${USER_ID}_org_${ORGANIZATION_ID}_attachments_${DATE_SUFFIX}.tar.gpg"
                 ATTACHMENTS_ORG_TEMP_DIR="$(mktemp -d -p "${ATTACHMENTS_PARENT_TEMP_DIR}" bw-backup-vault-org-attachments.XXXXXXXX)"
                 pushd "${ATTACHMENTS_ORG_TEMP_DIR}" >/dev/null
-                echo "${ITEMS_WITH_ATTACHMENTS_ORG}" > ./items.json
+                echo "${ORGITEMS_WITH_ATTACHMENTS}" > ./items.json
                 echoprompt "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}"
                 echo "${DOWNLOAD_ATTACHMENTS_ORG_COMMANDS}" | bash -e
                 tar -v -c . | gpg ${GPG_OPTIONS_ENCRYPT} -o "${ATTACHMENTS_ORG_OUTPUT_FILE}"
