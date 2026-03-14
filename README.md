@@ -90,6 +90,10 @@ included in folders: When you import an exported vault into an organization
 vault, all items should be fully imported; **HOWEVER**, the imported items will
 not be included into the folders they belonged to when they were exported.
 
+> [!WARNING]
+Something similar happens to archived organization items: when they are
+imported they do not remain archived, you will need to archive them again.
+
 
 ## Restore attachments script:
 
