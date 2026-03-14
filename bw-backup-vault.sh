@@ -105,7 +105,9 @@ else
         fi
     fi
     if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-        NUM_ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
+        NUM_UNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
+        NUM_ARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid null | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
+        NUM_ITEMS_WITH_ATTACHMENTS=$(( ${NUM_UNARCHIVEDITEMS_WITH_ATTACHMENTS} + ${NUM_ARCHIVEDITEMS_WITH_ATTACHMENTS} ))
         if [ ${NUM_ITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
             showwarning "WARNING: individual vault contains ${NUM_ITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
         fi
@@ -135,7 +137,9 @@ else
                 fi
             fi
             if [ ${WITH_ATTACHMENTS} -eq 0 ] ; then
-                NUM_ORGITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
+                NUM_ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
+                NUM_ORGARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid ${ORGANIZATION_ID} | jq -r '.[] | select(.attachments != []) | .id' | wc -l)"
+                NUM_ORGITEMS_WITH_ATTACHMENTS=$(( ${NUM_ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS} + ${NUM_ORGARCHIVEDITEMS_WITH_ATTACHMENTS} ))
                 if [ ${NUM_ORGITEMS_WITH_ATTACHMENTS} -gt 0 ] ; then
                     showwarning "WARNING: organization \`${ORGANIZATION_ID}' vault contains ${NUM_ORGITEMS_WITH_ATTACHMENTS} items with attachments that have not been backed up."
                 fi
@@ -149,8 +153,12 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     if [ ${DO_BACKUP_VAULT_INDIVIDUAL} -eq 0 ] ; then
         /bin/true
     else
-        ITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
-        if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
+        UNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
+        if [ "${UNARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then UNARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
+        ARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
+        if [ "${ARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then ARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
+        ITEMS_WITH_ATTACHMENTS="$(echo -e "${UNARCHIVEDITEMS_WITH_ATTACHMENTS}\n${ARCHIVEDITEMS_WITH_ATTACHMENTS}" | grep -v ^$ || /bin/true)"
+        if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] ; then
             showwarning "WARNING: no attachments found to export in individual vault."
         else
             DOWNLOAD_ATTACHMENTS_COMMANDS="$(echo "${ITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
@@ -175,7 +183,9 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     else
         for ORGANIZATION_ID in ${ORGANIZATION_IDS_TO_BACKUP} ; do
             ORGITEMIDS_EXPORTED="$(bw export --organizationid ${ORGANIZATION_ID} --format json --raw | jq -r '.items[] .id' | sort)"
-            ORGITEMIDS_READ="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id' | sort)"
+            ORGUNARCHIVEDITEMIDS_READ="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id')"
+            ORGARCHIVEDITEMIDS_READ="$(bw list items --archived --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id')"
+            ORGITEMIDS_READ="$(echo -e "${ORGUNARCHIVEDITEMIDS_READ}\n${ORGARCHIVEDITEMIDS_READ}" | grep -v ^$ | sort || /bin/true)"
             if [ "${ORGITEMIDS_EXPORTED}" == "${ORGITEMIDS_READ}" ] ; then
                 /bin/true
             else
@@ -183,8 +193,12 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
                 NUMORGITEMIDS_READ="$(echo "${ORGITEMIDS_READ}" | wc -l)"
                 showwarning "WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions."
             fi
-            ORGITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
-            if [ "${ORGITEMS_WITH_ATTACHMENTS}" == "" ] || [ "${ORGITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then
+            ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
+            if [ "${ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
+            ORGARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
+            if [ "${ORGARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then ORGARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
+            ORGITEMS_WITH_ATTACHMENTS="$(echo -e "${ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS}\n${ORGARCHIVEDITEMS_WITH_ATTACHMENTS}" | grep -v ^$ || /bin/true)"
+            if [ "${ORGITEMS_WITH_ATTACHMENTS}" == "" ] ; then
                 showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
             else
                 DOWNLOAD_ATTACHMENTS_ORG_COMMANDS="$(echo "${ORGITEMS_WITH_ATTACHMENTS}" | jq -r '. as $parent | .attachments[] | "bw get attachment --organizationid '${ORGANIZATION_ID}' \(.id) --itemid \($parent.id) --output ./\($parent.id)/\(.id)/"')"
