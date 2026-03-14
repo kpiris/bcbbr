@@ -28,9 +28,13 @@ fi
 
 umask 0077
 bw sync
-DESTINATION_VAULT_ITEMS="$(bw list items)"
+DESTINATION_VAULT_UNARCHIVED_ITEMS="$(bw list items)"
+if [ "${DESTINATION_VAULT_UNARCHIVED_ITEMS}" == "[]" ] ; then DESTINATION_VAULT_UNARCHIVED_ITEMS="" ; fi
+DESTINATION_VAULT_ARCHIVED_ITEMS="$(bw list items --archived)"
+if [ "${DESTINATION_VAULT_ARCHIVED_ITEMS}" == "[]" ] ; then DESTINATION_VAULT_ARCHIVED_ITEMS="" ; fi
 
-if [ "${DESTINATION_VAULT_ITEMS}" == "[]" ] ; then abort "ERROR: destination vault is empty" ; fi
+DESTINATION_VAULT_ITEMS="${DESTINATION_VAULT_UNARCHIVED_ITEMS}${DESTINATION_VAULT_ARCHIVED_ITEMS}"
+if [ "${DESTINATION_VAULT_ITEMS}" == "" ] ; then abort "ERROR: destination vault is empty" ; fi
 
 while [ "${1}" != "" ] ; do
     FLE="$(realpath ${1})"
@@ -62,7 +66,7 @@ while [ "${1}" != "" ] ; do
             elif [ ${ITEMS_COUNT} -ne 1 ] ; then
                 echo2 "WARNING: too many items found in destination vault (\`${DESTINATION_ITEM_ID}/${EXPORTED_ITEM_FIELDS}')."
             else
-                DESTINATION_ITEM_ID_WITH_ATTACHMENTS_ALREADY="$(echo "${DESTINATION_VAULT_ITEMS}" | jq '.[] | select(.id == "'${DESTINATION_ITEM_ID}'" and .attachments != null)')"
+                DESTINATION_ITEM_ID_WITH_ATTACHMENTS_ALREADY="$(echo "${DESTINATION_VAULT_ITEMS}" | jq '.[] | select(.id == "'${DESTINATION_ITEM_ID}'" and .attachments != [])')"
                 if [ "${DESTINATION_ITEM_ID_WITH_ATTACHMENTS_ALREADY}" != "" ] ; then
                     echo2 "WARNING: item \`${DESTINATION_ITEM_ID}/${EXPORTED_ITEM_FIELDS}' already has attachments."
                 else
