@@ -25,6 +25,19 @@ showwarning () {
     echo2 ""
 }
 
+echo_non_empty_objects () {
+    while [ $# -gt 0 ] ; do
+        if [ "$1" == "" ] ; then
+            /bin/true
+        elif [ "$1" == "[]" ] ; then
+            /bin/true
+        else
+            echo "$1"
+        fi
+        shift
+    done
+}
+
 ################################################################################
 
 export WITH_ATTACHMENTS=1
@@ -154,10 +167,8 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
         /bin/true
     else
         UNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
-        if [ "${UNARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then UNARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
         ARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
-        if [ "${ARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then ARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
-        ITEMS_WITH_ATTACHMENTS="$(echo -e "${UNARCHIVEDITEMS_WITH_ATTACHMENTS}\n${ARCHIVEDITEMS_WITH_ATTACHMENTS}" | grep -v ^$ || /bin/true)"
+        ITEMS_WITH_ATTACHMENTS="$(echo_non_empty_objects "${UNARCHIVEDITEMS_WITH_ATTACHMENTS}" "${ARCHIVEDITEMS_WITH_ATTACHMENTS}")"
         if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] ; then
             showwarning "WARNING: no attachments found to export in individual vault."
         else
@@ -185,7 +196,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
             ORGITEMIDS_EXPORTED="$(bw export --organizationid ${ORGANIZATION_ID} --format json --raw | jq -r '.items[] .id' | sort)"
             ORGUNARCHIVEDITEMIDS_READ="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id')"
             ORGARCHIVEDITEMIDS_READ="$(bw list items --archived --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id')"
-            ORGITEMIDS_READ="$(echo -e "${ORGUNARCHIVEDITEMIDS_READ}\n${ORGARCHIVEDITEMIDS_READ}" | grep -v ^$ | sort || /bin/true)"
+            ORGITEMIDS_READ="$(echo_non_empty_objects "${ORGUNARCHIVEDITEMIDS_READ}" "${ORGARCHIVEDITEMIDS_READ}" | sort)"
             if [ "${ORGITEMIDS_EXPORTED}" == "${ORGITEMIDS_READ}" ] ; then
                 /bin/true
             else
@@ -194,10 +205,8 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
                 showwarning "WARNING: exported (${NUMORGITEMIDS_EXPORTED}) and read (${NUMORGITEMIDS_READ}) items for organization \`${ORGANIZATION_ID}' are not the same. You should check unassigned items and collections permissions."
             fi
             ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
-            if [ "${ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
             ORGARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
-            if [ "${ORGARCHIVEDITEMS_WITH_ATTACHMENTS}" == "[]" ] ; then ORGARCHIVEDITEMS_WITH_ATTACHMENTS="" ; fi
-            ORGITEMS_WITH_ATTACHMENTS="$(echo -e "${ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS}\n${ORGARCHIVEDITEMS_WITH_ATTACHMENTS}" | grep -v ^$ || /bin/true)"
+            ORGITEMS_WITH_ATTACHMENTS="$(echo_non_empty_objects "${ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS}" "${ORGARCHIVEDITEMS_WITH_ATTACHMENTS}")"
             if [ "${ORGITEMS_WITH_ATTACHMENTS}" == "" ] ; then
                 showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
             else
