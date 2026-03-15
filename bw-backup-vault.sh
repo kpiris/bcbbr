@@ -27,12 +27,12 @@ showwarning () {
 
 echo_nonempty_objects () {
     while [ $# -gt 0 ] ; do
-        if [ "$1" == "" ] ; then
+        if [ "${1}" == "" ] ; then
             /bin/true
-        elif [ "$1" == "[]" ] ; then
+        elif [ "${1}" == "[]" ] ; then
             /bin/true
         else
-            echo "$1"
+            echo "${1}"
         fi
         shift
     done
