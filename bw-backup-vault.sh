@@ -25,7 +25,7 @@ showwarning () {
     echo2 ""
 }
 
-echo_non_empty_objects () {
+echo_nonempty_objects () {
     while [ $# -gt 0 ] ; do
         if [ "$1" == "" ] ; then
             /bin/true
@@ -168,7 +168,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
     else
         UNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
         ARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid null | jq '.[] | select(.attachments != [])' || /bin/true)"
-        ITEMS_WITH_ATTACHMENTS="$(echo_non_empty_objects "${UNARCHIVEDITEMS_WITH_ATTACHMENTS}" "${ARCHIVEDITEMS_WITH_ATTACHMENTS}")"
+        ITEMS_WITH_ATTACHMENTS="$(echo_nonempty_objects "${UNARCHIVEDITEMS_WITH_ATTACHMENTS}" "${ARCHIVEDITEMS_WITH_ATTACHMENTS}")"
         if [ "${ITEMS_WITH_ATTACHMENTS}" == "" ] ; then
             showwarning "WARNING: no attachments found to export in individual vault."
         else
@@ -196,7 +196,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
             ORGITEMIDS_EXPORTED="$(bw export --organizationid ${ORGANIZATION_ID} --format json --raw | jq -r '.items[] .id' | sort)"
             ORGUNARCHIVEDITEMIDS_READ="$(bw list items --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id')"
             ORGARCHIVEDITEMIDS_READ="$(bw list items --archived --organizationid ${ORGANIZATION_ID} | jq -r '.[] .id')"
-            ORGITEMIDS_READ="$(echo_non_empty_objects "${ORGUNARCHIVEDITEMIDS_READ}" "${ORGARCHIVEDITEMIDS_READ}" | sort)"
+            ORGITEMIDS_READ="$(echo_nonempty_objects "${ORGUNARCHIVEDITEMIDS_READ}" "${ORGARCHIVEDITEMIDS_READ}" | sort)"
             if [ "${ORGITEMIDS_EXPORTED}" == "${ORGITEMIDS_READ}" ] ; then
                 /bin/true
             else
@@ -206,7 +206,7 @@ if [ ${WITH_ATTACHMENTS} -eq 1 ] ; then
             fi
             ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
             ORGARCHIVEDITEMS_WITH_ATTACHMENTS="$(bw list items --archived --organizationid ${ORGANIZATION_ID} | jq '.[] | select(.attachments != [])' || /bin/true)"
-            ORGITEMS_WITH_ATTACHMENTS="$(echo_non_empty_objects "${ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS}" "${ORGARCHIVEDITEMS_WITH_ATTACHMENTS}")"
+            ORGITEMS_WITH_ATTACHMENTS="$(echo_nonempty_objects "${ORGUNARCHIVEDITEMS_WITH_ATTACHMENTS}" "${ORGARCHIVEDITEMS_WITH_ATTACHMENTS}")"
             if [ "${ORGITEMS_WITH_ATTACHMENTS}" == "" ] ; then
                 showwarning "WARNING: no attachments found to export in organization \`${ORGANIZATION_ID}' vault."
             else
